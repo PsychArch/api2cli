@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from .constants import DEFAULTS, IMAGE_CONSTRAINTS, TTS_CONSTRAINTS, VOICE_IDS
+from .constants import DEFAULTS, IMAGE_CONSTRAINTS, TTS_CONSTRAINTS
 from .errors import MinimaxValidationError
 from .file_utils import ensure_absolute
 
@@ -222,12 +222,6 @@ def validate_tts_params(
         )
 
     voice_id_value = voice_id or DEFAULTS["TTS"]["voice_id"]
-    if voice_id_value not in VOICE_IDS:
-        raise MinimaxValidationError(
-            f"Unknown voice-id. Allowed: {', '.join(VOICE_IDS)}",
-            field="voice_id",
-            value=voice_id_value,
-        )
 
     normalized_output = ensure_absolute(output_file)
 

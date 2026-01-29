@@ -1,6 +1,6 @@
 [project]
 name = "api2cli"
-version = "0.1.0"
+version = "0.1.1"
 description = "Convert APIs to CLI tools"
 readme = "README.md"
 requires-python = ">=3.12"
