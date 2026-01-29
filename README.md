@@ -20,6 +20,26 @@ uv add api2cli
 api2cli --version
 ```
 
+### Minimax
+
+Set your API key:
+
+```bash
+export MINIMAX_API_KEY="your_api_key_here"
+```
+
+Generate an image:
+
+```bash
+api2cli minimax image --prompt "A cinematic mountain sunrise" --output-file /tmp/mountain.png
+```
+
+Generate speech:
+
+```bash
+api2cli minimax tts --text "Hello from Minimax" --output-file /tmp/voice.mp3
+```
+
 ## Development
 
 This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
