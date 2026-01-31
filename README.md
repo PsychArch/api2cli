@@ -40,6 +40,26 @@ Generate speech:
 api2cli minimax tts --text "Hello from Minimax" --output-file /tmp/voice.mp3
 ```
 
+### Jina
+
+Set your API key (required for search):
+
+```bash
+export JINA_API_KEY="your_api_key_here"
+```
+
+Read a web page (cached on disk with TTL):
+
+```bash
+api2cli jina reader --url "https://example.com" --page 1
+```
+
+Search the web:
+
+```bash
+api2cli jina search --query "Jina AI search" --endpoint standard
+```
+
 ## Development
 
 This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
