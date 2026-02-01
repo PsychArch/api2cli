@@ -60,6 +60,32 @@ Search the web:
 api2cli jina search --query "Jina AI search" --endpoint standard
 ```
 
+### iCalendar (.ics)
+
+Create the default calendar file (stored in the XDG config directory):
+
+```bash
+api2cli ics create
+```
+
+Add an event:
+
+```bash
+api2cli ics add --summary "Team sync" --start "2026-02-03T09:00" --end "2026-02-03T10:00"
+```
+
+Add an all-day event (end date is inclusive):
+
+```bash
+api2cli ics add --summary "Vacation" --start "2026-02-10" --end "2026-02-12" --all-day
+```
+
+List events (optionally filter by range or keyword):
+
+```bash
+api2cli ics list --from "2026-02-01" --to "2026-02-28" --query "sync"
+```
+
 ## Development
 
 This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
