@@ -7,7 +7,7 @@ from datetime import date, datetime, time, timedelta, tzinfo
 from pathlib import Path
 from typing import Optional
 
-from .config import local_timezone, resolve_calendar_path
+from .config import local_timezone, resolve_calendar_path, resolve_timezone
 from .constants import DEFAULT_CALENDAR_NAME
 from .errors import ICSValidationError
 
@@ -56,6 +56,19 @@ def validate_uid(uid: str) -> str:
     if not uid:
         raise ICSValidationError("UID is required", field="uid")
     return uid
+
+
+def validate_timezone(tzid: Optional[str]) -> Optional[tuple[tzinfo, str]]:
+    if tzid is None:
+        return None
+    try:
+        return resolve_timezone(tzid)
+    except ValueError as exc:
+        raise ICSValidationError(
+            "Invalid timezone. Use an IANA name like America/Los_Angeles or UTC.",
+            field="tz",
+            value=tzid,
+        ) from exc
 
 
 def validate_summary(summary: str) -> str:
@@ -185,9 +198,10 @@ def validate_list_params(
     range_start: Optional[str],
     range_end: Optional[str],
     query: Optional[str],
+    tz: Optional[tzinfo] = None,
 ) -> EventListParams:
     resolved_path = resolve_calendar_path(path)
-    parsed_start, parsed_end = parse_event_range(range_start, range_end)
+    parsed_start, parsed_end = parse_event_range(range_start, range_end, tz=tz)
     cleaned_query = query.strip() if query else None
     return EventListParams(path=resolved_path, range_start=parsed_start, range_end=parsed_end, query=cleaned_query)
 
@@ -200,10 +214,11 @@ def validate_create_params(
     all_day: bool,
     description: Optional[str],
     location: Optional[str],
+    tz: Optional[tzinfo] = None,
 ) -> EventCreateParams:
     resolved_path = resolve_calendar_path(path)
     validated_summary = validate_summary(summary)
-    tzinfo = local_timezone()
+    tzinfo = tz or local_timezone()
     parsed_start = parse_event_datetime(start, all_day=all_day, tz=tzinfo)
     parsed_end = parse_event_datetime(end, all_day=all_day, tz=tzinfo) if end else None
     if all_day and parsed_end is not None:

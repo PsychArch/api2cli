@@ -74,6 +74,8 @@ Add an event:
 api2cli ics add --summary "Team sync" --start "2026-02-03T09:00" --end "2026-02-03T10:00"
 ```
 
+Calendars default to your system timezone. Override with `--tz` using an IANA name, e.g. `America/Los_Angeles`.
+
 Add an all-day event (end date is inclusive):
 
 ```bash

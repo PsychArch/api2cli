@@ -16,6 +16,7 @@ from api2cli.jina.constants import DEFAULTS as JINA_DEFAULTS, SEARCH_ENDPOINTS
 from api2cli.jina.validators import validate_reader_params, validate_search_params
 from api2cli.ics import (
     add_event,
+    calendar_timezone_for_path,
     create_calendar,
     delete_event,
     format_error_for_user as format_ics_error,
@@ -27,6 +28,7 @@ from api2cli.ics import (
     validate_create_params,
     validate_list_params,
     validate_summary,
+    validate_timezone,
     validate_uid,
 )
 from api2cli.minimax import (
@@ -373,11 +375,18 @@ def ics_create(
         "--force",
         help="Overwrite existing calendar file.",
     ),
+    tz: Optional[str] = typer.Option(
+        None,
+        "--tz",
+        help="Calendar timezone (IANA name like America/Los_Angeles).",
+    ),
 ):
     """Create a new .ics calendar file."""
     try:
         params = validate_calendar_create_params(Path(file) if file else None, name, force)
-        create_calendar(params.path, name=params.name, force=params.force)
+        tzinfo = validate_timezone(tz)
+        tzid = tzinfo[1] if tzinfo else None
+        create_calendar(params.path, name=params.name, force=params.force, tzid=tzid)
     except Exception as exc:
         typer.secho(format_ics_error(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
@@ -399,11 +408,28 @@ def ics_add(
         "-f",
         help="Calendar file path (defaults to XDG config calendar).",
     ),
+    tz: Optional[str] = typer.Option(
+        None,
+        "--tz",
+        help="Override calendar timezone (IANA name like America/Los_Angeles).",
+    ),
 ):
     """Add an event to the calendar."""
     try:
-        params = validate_create_params(Path(file) if file else None, summary, start, end, all_day, description, location)
-        info = add_event(params)
+        tzinfo_override = validate_timezone(tz)
+        tzid = tzinfo_override[1] if tzinfo_override else None
+        tzinfo = calendar_timezone_for_path(Path(file) if file else None, tzid=tzid)
+        params = validate_create_params(
+            Path(file) if file else None,
+            summary,
+            start,
+            end,
+            all_day,
+            description,
+            location,
+            tz=tzinfo,
+        )
+        info = add_event(params, tzid=tzid)
     except Exception as exc:
         typer.secho(format_ics_error(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
@@ -431,11 +457,18 @@ def ics_update(
         "-f",
         help="Calendar file path (defaults to XDG config calendar).",
     ),
+    tz: Optional[str] = typer.Option(
+        None,
+        "--tz",
+        help="Override calendar timezone (IANA name like America/Los_Angeles).",
+    ),
 ):
     """Update an event by UID."""
     try:
         calendar_path = validate_calendar_path(Path(file) if file else None)
         validated_uid = validate_uid(uid)
+        tzinfo_override = validate_timezone(tz)
+        tzid = tzinfo_override[1] if tzinfo_override else None
         if summary is not None:
             validate_summary(summary)
         info = update_event(
@@ -447,6 +480,7 @@ def ics_update(
             all_day,
             description,
             location,
+            tzid=tzid,
         )
     except Exception as exc:
         typer.secho(format_ics_error(exc), fg=typer.colors.RED, err=True)
@@ -524,11 +558,19 @@ def ics_list(
         "-q",
         help="Keyword search over summary, description, and location.",
     ),
+    tz: Optional[str] = typer.Option(
+        None,
+        "--tz",
+        help="Override calendar timezone (IANA name like America/Los_Angeles).",
+    ),
 ):
     """List events (optionally filtered by date range or keyword)."""
     try:
-        params = validate_list_params(Path(file) if file else None, range_from, range_to, query)
-        events = list_events(params.path, params.range_start, params.range_end, params.query)
+        tzinfo_override = validate_timezone(tz)
+        tzid = tzinfo_override[1] if tzinfo_override else None
+        tzinfo = calendar_timezone_for_path(Path(file) if file else None, tzid=tzid)
+        params = validate_list_params(Path(file) if file else None, range_from, range_to, query, tz=tzinfo)
+        events = list_events(params.path, params.range_start, params.range_end, params.query, tzinfo_override=tzinfo)
     except Exception as exc:
         typer.secho(format_ics_error(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
